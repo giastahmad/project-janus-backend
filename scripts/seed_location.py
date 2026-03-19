@@ -36,12 +36,19 @@ def seed_location_dimension():
     
     db = SessionLocal()
     try:
-        existing_locations = db.query(LocationDimension).count()
-        if existing_locations != 0:
-            print("Location Dimension already seeded, skip the process.")
+        existing_locations = db.query(LocationDimension.city, LocationDimension.province).all()
+        df_existing = pd.DataFrame(existing_locations, columns=['city', 'province'])
+        if not df_existing.empty:
+            comparison_df = df_final.merge(df_existing, on=['city', 'province'], how='left', indicator=True)
+            df_to_insert = comparison_df[comparison_df['_merge'] == 'left_only'].drop(columns=['_merge'])
+        else:
+            df_to_insert = df_final
+            
+        if df_to_insert.empty:
+            print("No new locations found. Database is up to date.")
             return
 
-        records = df_final.to_dict(orient='records')
+        records = df_to_insert.to_dict(orient='records')
         
         db.bulk_insert_mappings(LocationDimension, records)
         db.commit()
