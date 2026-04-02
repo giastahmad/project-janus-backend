@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, Float, Boolean, Date, ForeignKey, Column
+from sqlalchemy import Integer, String, Float, Boolean, Date, ForeignKey, Column, UniqueConstraint
 from sqlalchemy.orm import relationship, declarative_base
 
 Base = declarative_base()
@@ -64,3 +64,7 @@ class OrderFact(Base):
     platform = relationship('PlatformDimension', back_populates='order')
     payment_method = relationship('PaymentMethodDimension', back_populates='order')
     location = relationship('LocationDimension', back_populates='order')
+    
+    __table_args__ = (
+        UniqueConstraint('order_key', 'product_id', name='uq_order_product'),
+    )

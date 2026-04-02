@@ -4,7 +4,7 @@ from models import PaymentMethodDimension
 
 payment_methods = {
     'payment_method_name' : ['COD', 'PAYLATER', 'E-WALLET', 'BANK_TRANSFER', 'CREDIT_CARD', 'STORE_BALANCE', 'OFFLINE_AGENT'],
-    'payment_method_category' : ['MANUAL', 'LAVERAGE', 'LIQUID', 'LIQUID', 'LAVERAGE', 'LIQUID', 'MANUAL']
+    'payment_method_category' : ['MANUAL', 'LEVERAGE', 'LIQUID', 'LIQUID', 'LEVERAGE', 'LIQUID', 'MANUAL']
 }
 
 def seed_payment_method_dimension():
