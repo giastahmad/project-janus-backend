@@ -210,6 +210,8 @@ def transform_shopee(df):
     df_standard = df_standard[REQUIRED_COLUMNS_SHOPEE]
     
     df_standard = df_standard[df_standard['status'].str.lower() == 'selesai']
+    df_standard['total_amount'] = pd.to_numeric(df_standard['total_amount'], errors='coerce').fillna(0)
+    df_standard = df_standard[df_standard['total_amount'] > 0]
 
     df_standard['date'] = pd.to_datetime(df_standard['date']).dt.date
     
@@ -267,6 +269,8 @@ def transform_tokopedia(df):
     df_standard = df_standard[REQUIRED_COLUMNS_TOKOPEDIA]
     
     df_standard = df_standard[df_standard['status'].str.lower() == 'selesai']
+    df_standard['total_amount'] = pd.to_numeric(df_standard['total_amount'], errors='coerce').fillna(0)
+    df_standard = df_standard[df_standard['total_amount'] > 0]
     
     df_standard['date'] = pd.to_datetime(df_standard['date']).dt.date
     
