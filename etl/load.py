@@ -239,6 +239,7 @@ def load_data_warehouse(df_transformed):
         if row_pct > 5.0 or rev_pct > 3.0:
             print(f"      [CRITICAL WARNING] UNKNOWN percentage is too high!")
             print(f"      Please check SKU_MAPPING in transform.py for the latest products.")
+            print(f"      [ABORT] Load Process aborted. Data has not been loaded.")
 
 
     print(f"   7. Inserting {len(df_order_fact_final)} rows of NEW TRANSACTIONS into order_fact...")

@@ -46,14 +46,14 @@ def run_etl_pipeline(file_path, platform):
 if __name__ == "__main__":
     
     # 1. Data Shopee
-    file_shopee = 'data\\Shopee Orders Sep 2025.xlsx'
+    file_shopee = 'data\\shopee apr 2026.xlsx' 
     if os.path.exists(file_shopee):
         run_etl_pipeline(file_shopee, 'shopee')
     else:
         print(f"[SKIP] File {file_shopee} not found.")
         
     # 2. Data Tokopedia
-    file_tokopedia = 'data\\Tiktok & Tokped Orders Full-year 2025.xlsx'
+    file_tokopedia = ''
     if os.path.exists(file_tokopedia):
         run_etl_pipeline(file_tokopedia, 'tokopedia')
     else:

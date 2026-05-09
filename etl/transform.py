@@ -57,11 +57,12 @@ REQUIRED_COLUMNS_TOKOPEDIA = [
 PAYMENT_METHOD = {
     "COD" : [["cod (bayar di tempat)", "cod", "bayar di tempat (cod)", "bayar di tempat", "cash"],"MANUAL"],
     "PAYLATER" : [["spaylater", "gopay later", "paylater", "later", "paylater + tiktok shop balance"], "LEVERAGE"],
-    "E-WALLET" : [["shopeepay", "dana", "gopay", "ovo", "linkaja", "ewallet", "e wallet", "dana + tiktok shop balance", "ovo + tiktok shop balance"], "LIQUID"],
+    "E-WALLET" : [["shopeepay", "dana", "gopay", "ovo", "linkaja", "ewallet", "e wallet", "dana + tiktok shop balance", "ovo + tiktok shop balance", "gopay + tiktok shop balance", "tiktok shop balance + qris"], "LIQUID"],
     "BANK_TRANSFER" : [["seabank", "jago", "transfer bank", "online payment", "qris", "bank transfer", "bank", "seabank bayar instan"], "LIQUID"],
     "CREDIT_CARD" : [["kartu kredit/debit", "credit card", "debit", "cicilan kartu kredit"], "LEVERAGE"],
     "STORE_BALANCE" : [["saldo penjual", "tiktok shop balance", "balance", "saldo shopeepay"], "LIQUID"],
-    "OFFLIBE_AGENT" : [["mitra shopee"], "MANUAL"]
+    "OFFLIBE_AGENT" : [["mitra shopee"], "MANUAL"],
+    "RETAIL_OUTLET": [["alfamart/alfamidi/dan+dan", "indomaret/i.saku"], "MANUAL"]
 }
 
 COLOR_MAPPING = {
@@ -73,9 +74,12 @@ COLOR_MAPPING = {
     "COKELAT TUA" : "COKELAT TUA",
     "COKLAT TUA" : "COKELAT TUA",
     "COKSU/COKLATUA(NOTE)" : "COKELAT SUSU",
+    "COKSU/COKTU(NOTE)" : "COKELAT SUSU",
     "COKSU DK" : "COKELAT SUSU",
     "COKELAT SUSU" : "COKELAT SUSU",
     "COKLAT SUSU" : "COKELAT SUSU",
+    "COKELAT" : "COKELAT",
+    "ABU-ABU MUDA" : "ABU-ABU",
     "BIRUMUDA/DENIM(NOTE)" : "BIRU MUDA",
     "BIRU MUDA" : "BIRU MUDA",
     "DENIM/BIRUMUDA(NOTE)" : "DENIM",
@@ -84,19 +88,24 @@ COLOR_MAPPING = {
     "BIRU TUA" : "BIRU TUA",
     "EMERALD" : "EMERALD",
     "HIJAU BOTOL" : "HIJAU BOTOL",
+    "HIJAU" : "HIJAU",
     "MAROON DK" : "MAROON",
     "MAROON" : "MAROON",
+    "MERAH TUA" : "MERAH",
     "DUSTY ROSE" : "DUSTYPINK",
     "DUSTYPINK" : "DUSTYPINK",
+    "UNGU MUDA" : "LAVENDER",
     "LAVENDER/LILAC(NOTE)" : "LAVENDER",
     "LAVENDER/LILAC" : "LAVENDER",
     "LILAC" : "LAVENDER",
     "LAVENDER" : "LAVENDER",
     "BROKEN WHITE" : "BROKEN WHITE",
+    "CREAM" : "BROKEN WHITE",
     "SILVER DK" : "SILVER",
     "SILVER" : "SILVER",
     "PERAK" : "SILVER",
     "HITAM" : "HITAM",
+    "PUTIH" : "PUTIH",
     "TERRACOTTA" : "TERRACOTTA",
     "ROSEGOL DK" : "ROSE GOLD",
     "ROSE GOLD" : "ROSE GOLD",
@@ -104,6 +113,7 @@ COLOR_MAPPING = {
     "NAVY" : "NAVY",
     "SAGE" : "SAGE",
     "GOLD" : "GOLD",
+    "EMAS" : "GOLD",
     "TOSCA" : "TOSCA",
 }
 
@@ -138,7 +148,14 @@ SKU_MAPPING = {
     "SLAYER" : "SLAYER",
     "VIVI" : "VIVI",
     "ZZ" : "ZZ",
-    "K3" : "K3"
+    "TL K3" : "K3",
+    "K3" : "K3",
+    "PELANGI" : "PELANGI",
+    "CALLA" : "CALLA",
+    "ELENA" : "ELENA",
+    "BBRM" : "BBRM",
+    "STL" : "STL",
+    "BBV" : "VIVI"
 }
 
 MUSLIM = [
@@ -183,8 +200,11 @@ def map_data_payment(df):
 
   return df
 
-def extract_size(df):
-  match = re.search(r'(\d+)(?:\s*-\s*(\d+))?', df)
+def extract_size(val):
+  if pd.isna(val) or not isinstance(val, str):
+        return None
+
+  match = re.search(r'(\d+)(?:\s*-\s*(\d+))?', val)
 
   if match:
     num1 = int(match.group(1))
@@ -204,6 +224,24 @@ def extract_size(df):
         return f"{num1}-{num1+1} Tahun"
   else:
     return None
+
+def fix_indonesian_price(val):
+    if pd.isna(val):
+        return 0
+        
+    if isinstance(val, str):
+        val = val.replace('Rp', '').replace(' ', '').replace('.', '')
+        try:
+            return float(val)
+        except:
+            return 0
+            
+    elif isinstance(val, (int, float)):
+        if 0 < val < 1000:
+            return val * 1000
+        return float(val)
+        
+    return 0
 
 def transform_shopee(df):
     df_standard = map_columns(df)
@@ -236,13 +274,14 @@ def transform_shopee(df):
 
     df_standard['color'] = extracted_color.map(COLOR_MAPPING)
     
-    df_standard['size'] = df_standard['variant'].str.split(',').str[1].str.upper().apply(extract_size)
+    df_standard['size'] = df_standard['variant'].str.upper().apply(extract_size)
     
-    df_standard['price'] = df_standard['price'] * 1000
-    df_standard['price_after_discount'] = df_standard['price_after_discount'] * 1000
+    curr_columns = ['price', 'price_after_discount', 'total_amount']
+    for col in curr_columns:
+        df_standard[col] = df_standard[col].apply(fix_indonesian_price)
+    
     df_standard['discount'] = df_standard['price'] - df_standard['price_after_discount']
     
-    df_standard['total_amount'] = df_standard['total_amount'] * 1000
     df_standard['line_total'] = df_standard['price_after_discount'] * df_standard['quantity']
     order_totals = df_standard.groupby('order_key')['line_total'].transform('sum')
     
