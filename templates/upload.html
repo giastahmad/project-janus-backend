@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Data - Toko Lamiah{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+    * { font-family: 'DM Sans', sans-serif; }
+    .page-title { font-family: 'Lora', serif; font-size: 26px; font-weight: 600; color: #111827; }
+    .page-sub { font-size: 13px; color: #9ca3af; margin-top: 2px; }
+    
+    .upload-card {
+        background: #fff;
+        border: 1px solid #e8e5df;
+        border-radius: 16px;
+        padding: 32px;
+        max-width: 550px;
+        margin: 0 auto;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .form-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 8px;
+        display: block;
+    }
+    .form-select {
+        width: 100%;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 14px;
+        color: #374151;
+        background: #fafafa;
+        outline: none;
+        transition: border-color 0.15s;
+        margin-bottom: 24px;
+        cursor: pointer;
+    }
+    .form-select:focus {
+        border-color: #6366f1;
+        background: #fff;
+    }
+    
+    /* Drag and Drop area */
+    .drop-zone {
+        border: 2px dashed #d1d5db;
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        background: #fafafa;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-bottom: 24px;
+    }
+    .drop-zone:hover {
+        background: #f3f4f6;
+    }
+    .drop-zone.dragover {
+        border-color: #6366f1;
+        background: #eef2ff;
+    }
+    .drop-zone-icon {
+        font-size: 32px;
+        margin-bottom: 12px;
+    }
+    .drop-zone-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: #4b5563;
+        margin-bottom: 4px;
+    }
+    .drop-zone-subtext {
+        font-size: 12px;
+        color: #9ca3af;
+    }
+    #fileInput {
+        display: none;
+    }
+    
+    /* Button */
+    .btn-submit {
+        width: 100%;
+        background: #111827;
+        color: #fff;
+        border: none;
+        padding: 14px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-submit:hover {
+        background: #374151;
+    }
+    .btn-submit:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    /* Alert Messages */
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-bottom: 20px;
+        display: none;
+        font-weight: 500;
+    }
+    .alert.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .alert.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .file-info {
+        font-size: 13px; color: #6366f1; font-weight: 600; text-align: center; 
+        margin-top: -10px; margin-bottom: 20px; padding: 8px; background: #eef2ff; 
+        border-radius: 8px; display: none;
+    }
+</style>
+
+<div style="max-width: 85%; margin: 0 auto; padding: 36px 32px;">
+    
+    <div style="margin-bottom: 32px; text-align: center;">
+        <div class="page-title">Upload Data Transaksi</div>
+        <div class="page-sub">Tambahkan data penjualan dari platform e-commerce (.xlsx / .csv)</div>
+    </div>
+
+    <div class="upload-card">
+        <div id="alertMessage" class="alert"></div>
+
+        <form id="uploadForm">
+            <label class="form-label">Pilih Platform</label>
+            <select id="platformSelect" name="platform" class="form-select" required>
+                <option value="" disabled selected>Pilih sumber data...</option>
+                <option value="shopee">Shopee</option>
+                <option value="tokopedia">Tokopedia</option>
+                <option value="tiktok">TikTok Shop</option>
+            </select>
+
+            <label class="form-label">File Laporan</label>
+            <div id="dropZone" class="drop-zone">
+                <div class="drop-zone-icon">📥</div>
+                <div class="drop-zone-text">Klik atau tarik file ke area ini</div>
+                <div class="drop-zone-subtext">Hanya menerima format .xlsx dan .csv</div>
+                <input type="file" id="fileInput" name="file" accept=".csv, .xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" required>
+            </div>
+            
+            <div id="fileInfo" class="file-info"></div>
+
+            <button type="submit" id="submitBtn" class="btn-submit">Mulai Upload</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const uploadForm = document.getElementById('uploadForm');
+    const fileInfo = document.getElementById('fileInfo');
+    const submitBtn = document.getElementById('submitBtn');
+    const alertMessage = document.getElementById('alertMessage');
+    const urlParams = new URLSearchParams(window.location.search);
+    const apiKey = urlParams.get('key');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            updateFileInfo();
+        }
+    });
+
+    fileInput.addEventListener('change', updateFileInfo);
+
+    function updateFileInfo() {
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const validExtensions = ['xlsx', 'csv'];
+            const extension = file.name.split('.').pop().toLowerCase();
+            
+            if (!validExtensions.includes(extension)) {
+                showAlert('Format tidak valid. Hanya menerima .xlsx atau .csv', 'error');
+                fileInput.value = ''; 
+                fileInfo.style.display = 'none';
+                return;
+            }
+            
+            fileInfo.innerHTML = `📝 ${file.name} <br><span style="font-size:11px; font-weight:400; color:#6b7280;">(${(file.size / 1024).toFixed(1)} KB)</span>`;
+            fileInfo.style.display = 'block';
+            alertMessage.style.display = 'none'; 
+        }
+    }
+
+    function showAlert(message, type) {
+        alertMessage.textContent = message;
+        alertMessage.className = `alert ${type}`;
+        alertMessage.style.display = 'block';
+    }
+
+    uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!fileInput.files.length) {
+            showAlert('Pilih file laporan terlebih dahulu!', 'error');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('platform', document.getElementById('platformSelect').value);
+        formData.append('file', fileInput.files[0]);
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Memproses Upload...';
+        alertMessage.style.display = 'none';
+
+        try {
+            let fetchUrl = '/api/upload';
+            if (apiKey) fetchUrl += `?key=${apiKey}`;
+
+            const response = await fetch(fetchUrl, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-API-KEY': apiKey || ''
+                }
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showAlert(result.message || 'Data berhasil diproses!', 'success');
+                uploadForm.reset();
+                fileInfo.style.display = 'none';
+            } else {
+                showAlert(result.message || 'Gagal mengupload file.', 'error');
+            }
+        } catch (error) {
+            showAlert('Koneksi ke server terputus.', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Mulai Upload';
+        }
+    });
+</script>
+{% endblock %}

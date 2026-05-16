@@ -39,6 +39,12 @@ def index():
 # ==========================================
 # 1. UPLOAD
 # ==========================================
+@app.route('/upload')
+def upload_view():
+    if request.args.get('key') != os.getenv('X-API-KEY'):
+        return "Akses Ditolak", 401
+    return render_template('upload.html')
+
 @app.route('/api/upload', methods=['POST'])
 def upload_data():
     if not is_authorized(request):
@@ -48,17 +54,36 @@ def upload_data():
         return jsonify({"message": "Tidak ada file yang dikirim"}), 400
 
     file = request.files['file']
+    platform = request.form.get('platform')
+
     if file.filename == '':
         return jsonify({"message": "Nama file kosong"}), 400
+        
+    if not platform:
+        return jsonify({"message": "Platform e-commerce belum dipilih"}), 400
+
+    allowed_extensions = ['.xlsx', '.csv']
+    _, ext = os.path.splitext(file.filename)
+    if ext.lower() not in allowed_extensions:
+        return jsonify({"message": "Hanya file .xlsx dan .csv yang diperbolehkan"}), 400
 
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
     file.save(filepath)
 
     try:
-        # extract.run_extract(filepath)
-        # transform.run_transform()
-        # load.run_load_to_mysql()
-        return jsonify({"message": "File berhasil diproses."}), 200
+        raw_df = extract.extract_data(filepath, platform)
+        
+        platform_lower = platform.lower()
+        if platform_lower == 'shopee':
+            transformed_df = transform.transform_shopee(raw_df)
+        elif platform_lower in ['tokopedia', 'tiktok']:
+            transformed_df = transform.transform_tokopedia(raw_df)
+        else:
+            raise ValueError(f"Fungsi transformasi untuk platform {platform} belum tersedia.")
+
+        load.load_data_warehouse(transformed_df)
+        return jsonify({"message": f"File berhasil diupload dan diproses untuk platform {platform}."}), 200
+    
     except Exception as e:
         return jsonify({"message": f"Terjadi kesalahan sistem: {str(e)}"}), 500
 

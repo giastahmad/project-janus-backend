@@ -1,9 +1,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link
-  href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap"
-  rel="stylesheet"
-/>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap"
+  rel="stylesheet" />
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
@@ -14,6 +12,7 @@
     margin: 0;
     padding: 0;
   }
+
   body {
     font-family: "DM Sans", sans-serif;
     background: #f8f7f4;
@@ -50,15 +49,17 @@
     gap: 10px;
     text-decoration: none;
   }
+
   .nav-brand-icon {
     width: 32px;
     height: 32px;
-    background: #111827;
+    background: #E6521F;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
+
   .nav-brand-icon svg {
     width: 16px;
     height: 16px;
@@ -68,13 +69,15 @@
     stroke-linecap: round;
     stroke-linejoin: round;
   }
+
   .nav-brand-name {
     font-family: "Lora", serif;
     font-size: 17px;
     font-weight: 600;
-    color: #111827;
+    color: #E6521F;
     letter-spacing: -0.01em;
   }
+
   .nav-brand-sub {
     font-size: 10px;
     font-weight: 500;
@@ -92,6 +95,7 @@
     gap: 4px;
     list-style: none;
   }
+
   .nav-links a {
     display: flex;
     align-items: center;
@@ -107,14 +111,17 @@
       color 0.15s;
     white-space: nowrap;
   }
+
   .nav-links a:hover {
     background: #f3f4f6;
-    color: #111827;
+    color: #E6521F;
   }
+
   .nav-links a.active {
-    background: #111827;
+    background: #E6521F;
     color: #f8f7f4;
   }
+
   .nav-links a svg {
     width: 14px;
     height: 14px;
@@ -132,6 +139,7 @@
     align-items: center;
     gap: 10px;
   }
+
   .nav-badge {
     font-size: 11px;
     font-weight: 500;
@@ -144,55 +152,76 @@
 </style>
 
 <nav class="nav-root">
-    <div class="nav-inner">
- 
-      <!-- Brand -->
-      <a class="nav-brand" href="/dashboard?key={{ request.args.get('key') }}">
-        <div class="nav-brand-icon">
-          <!-- bar-chart icon -->
-          <svg viewBox="0 0 24 24">
-            <rect x="3" y="12" width="4" height="9" rx="1"/>
-            <rect x="10" y="7"  width="4" height="14" rx="1"/>
-            <rect x="17" y="3" width="4" height="18" rx="1"/>
-          </svg>
-        </div>
-        <div>
-          <div class="nav-brand-name">Janus</div>
-          <div class="nav-brand-sub">Analytics</div>
-        </div>
-      </a>
- 
-      <!-- Nav Links -->
-      <ul class="nav-links">
-        <li>
-          <a href="/dashboard?key={{ request.args.get('key') }}"
-             class="{{ 'active' if request.endpoint == 'dashboard_view' else '' }}">
-            <svg viewBox="0 0 24 24">
-              <rect x="3" y="3" width="7" height="7" rx="1.5"/>
-              <rect x="14" y="3" width="7" height="7" rx="1.5"/>
-              <rect x="3" y="14" width="7" height="7" rx="1.5"/>
-              <rect x="14" y="14" width="7" height="7" rx="1.5"/>
-            </svg>
-            Dashboard
-          </a>
-        </li>
-        <li>
-          <a href="#"
-             class="{{ 'active' if request.endpoint == 'upload_view' else '' }}">
-            <svg viewBox="0 0 24 24">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            Upload Data
-          </a>
-        </li>
-      </ul>
- 
-      <!-- Right: env badge -->
-      <div class="nav-right">
+  <div class="nav-inner">
 
+    <!-- Brand -->
+    <a class="nav-brand" id="nav-brand-link" href="/dashboard?key={{ request.args.get('key') }}">
+      <div class="nav-brand-icon">
+        <!-- bar-chart icon -->
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="12" width="4" height="9" rx="1" />
+          <rect x="10" y="7" width="4" height="14" rx="1" />
+          <rect x="17" y="3" width="4" height="18" rx="1" />
+        </svg>
       </div>
- 
+      <div>
+        <div class="nav-brand-name">Janus</div>
+        <div class="nav-brand-sub">Analytics</div>
+      </div>
+    </a>
+
+    <!-- Nav Links -->
+    <ul class="nav-links">
+      <li>
+        <a id="nav-dashboard" href="/dashboard?key={{ request.args.get('key') }}"
+          class="{{ 'active' if request.endpoint == 'dashboard_view' else '' }}">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+          Dashboard
+        </a>
+      </li>
+      <li>
+        <a id="nav-upload" href="/upload?key={{ request.args.get('key') }}"
+          class="{{ 'active' if request.endpoint == 'upload_view' else '' }}">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          Upload Data
+        </a>
+      </li>
+    </ul>
+
+    <!-- Right: env badge -->
+    <div class="nav-right">
+      <div class="nav-badge">Lamiah</div>
     </div>
-  </nav>
+
+  </div>
+</nav>
+
+<script>
+  (function () {
+    const current = new URLSearchParams(window.location.search);
+    const FILTER_KEYS = ['key', 'start_date', 'end_date', 'platform'];
+
+    function buildUrl(basePath) {
+      const params = new URLSearchParams();
+      FILTER_KEYS.forEach(k => {
+        const v = current.get(k);
+        if (v) params.set(k, v);
+      });
+      const qs = params.toString();
+      return qs ? basePath + '?' + qs : basePath;
+    }
+
+    document.getElementById('nav-brand-link').href = buildUrl('/dashboard');
+    document.getElementById('nav-dashboard').href = buildUrl('/dashboard');
+    document.getElementById('nav-upload').href = buildUrl('/upload');
+  })();
+</script>
