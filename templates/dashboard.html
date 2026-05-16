@@ -1,0 +1,1002 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Toko Lamiah{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<style>
+    * {
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .font-display {
+        font-family: 'Lora', serif;
+    }
+
+    body {
+        background: #f8f7f4;
+    }
+
+    .kpi-card {
+        background: #fff;
+        border: 1px solid #e8e5df;
+        border-radius: 16px;
+        padding: 24px;
+        position: relative;
+        overflow: hidden;
+        transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .kpi-card:hover {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+        transform: translateY(-2px);
+    }
+
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .kpi-card.accent-indigo::before {
+        background: #6366f1;
+    }
+
+    .kpi-card.accent-emerald::before {
+        background: #10b981;
+    }
+
+    .kpi-card.accent-amber::before {
+        background: #f59e0b;
+    }
+
+    .kpi-card.accent-rose::before {
+        background: #f43f5e;
+    }
+
+    .kpi-card.accent-sky::before {
+        background: #0ea5e9;
+    }
+
+    .kpi-card.accent-violet::before {
+        background: #8b5cf6;
+    }
+
+    .kpi-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        margin-bottom: 16px;
+    }
+
+    .kpi-card.accent-indigo .kpi-icon {
+        background: #eef2ff;
+    }
+
+    .kpi-card.accent-emerald .kpi-icon {
+        background: #ecfdf5;
+    }
+
+    .kpi-card.accent-amber .kpi-icon {
+        background: #fffbeb;
+    }
+
+    .kpi-card.accent-rose .kpi-icon {
+        background: #fff1f2;
+    }
+
+    .kpi-card.accent-sky .kpi-icon {
+        background: #f0f9ff;
+    }
+
+    .kpi-card.accent-violet .kpi-icon {
+        background: #f5f3ff;
+    }
+
+    .kpi-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #9ca3af;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .kpi-value {
+        font-size: 28px;
+        font-weight: 600;
+        color: #111827;
+        margin-top: 4px;
+        line-height: 1.2;
+        font-family: 'Lora', serif;
+    }
+
+    .kpi-sub {
+        font-size: 12px;
+        color: #9ca3af;
+        margin-top: 6px;
+    }
+
+    .chart-card {
+        background: #fff;
+        border: 1px solid #e8e5df;
+        border-radius: 16px;
+        padding: 28px;
+    }
+
+    .chart-title {
+        font-family: 'Lora', serif;
+        font-size: 16px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 20px;
+    }
+
+    .filter-bar {
+        background: #fff;
+        border: 1px solid #e8e5df;
+        border-radius: 16px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: flex-end;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .filter-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .filter-input {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 9px 14px;
+        font-size: 14px;
+        color: #374151;
+        background: #fafafa;
+        outline: none;
+        transition: border-color 0.15s;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .filter-input:focus {
+        border-color: #6366f1;
+        background: #fff;
+    }
+
+    .btn-reset {
+        padding: 9px 18px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        background: #fafafa;
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-family: 'DM Sans', sans-serif;
+        white-space: nowrap;
+    }
+
+    .btn-reset:hover {
+        border-color: #d1d5db;
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .page-title {
+        font-family: 'Lora', serif;
+        font-size: 26px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .page-sub {
+        font-size: 13px;
+        color: #9ca3af;
+        margin-top: 2px;
+    }
+
+    .section-divider {
+        font-size: 11px;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 0 4px;
+        margin: 8px 0;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead th {
+        font-size: 11px;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 8px 12px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    tbody tr {
+        border-bottom: 1px solid #f9fafb;
+        transition: background 0.1s;
+    }
+
+    tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    tbody tr:hover {
+        background: #fafafa;
+    }
+
+    tbody td {
+        padding: 12px 12px;
+        font-size: 14px;
+        color: #374151;
+    }
+
+    .rank-badge {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        background: #f3f4f6;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+    }
+
+    .rank-badge.gold {
+        background: #fffbeb;
+        color: #d97706;
+    }
+
+    .rank-badge.silver {
+        background: #f8fafc;
+        color: #64748b;
+    }
+
+    .rank-badge.bronze {
+        background: #fff7ed;
+        color: #c2410c;
+    }
+
+    .ramadhan-bar {
+        height: 6px;
+        border-radius: 99px;
+        background: #f3f4f6;
+        overflow: hidden;
+        margin-top: 8px;
+    }
+
+    .ramadhan-fill-r {
+        height: 100%;
+        border-radius: 99px;
+        background: linear-gradient(90deg, #8b5cf6, #6366f1);
+    }
+
+    .ramadhan-fill-n {
+        height: 100%;
+        border-radius: 99px;
+        background: #e5e7eb;
+    }
+</style>
+
+<div style="max-width: 85%; margin: 0 auto; padding: 36px 32px;">
+
+    <!-- Header -->
+    <div
+        style="margin-bottom: 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div>
+            <div class="page-title">Dashboard Analitik</div>
+            <div class="page-sub">Toko Lamiah · Data Penjualan Real-time</div>
+        </div>
+        <div style="font-size: 12px; color: #d1d5db; font-weight: 500;">
+            {% if request.args.get('start_date') or request.args.get('end_date') %}
+            <span
+                style="background: #eef2ff; color: #6366f1; padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 600;">Filter
+                Aktif</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <form method="GET" action="/dashboard" id="filterForm" style="margin-bottom: 28px;">
+        <input type="hidden" name="key" value="{{ request.args.get('key') }}">
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label class="filter-label">Dari Tanggal</label>
+                <input type="date" name="start_date" class="filter-input"
+                    value="{{ request.args.get('start_date', '') }}" onchange="this.form.submit()">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Sampai Tanggal</label>
+                <input type="date" name="end_date" class="filter-input" value="{{ request.args.get('end_date', '') }}"
+                    onchange="this.form.submit()">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Platform</label>
+                <select name="platform" class="filter-input" onchange="this.form.submit()"
+                    style="min-width: 160px; cursor: pointer;">
+                    <option value="">Semua Platform</option>
+                    {% for p in m.platform_options %}
+                    <option value="{{ p }}" {% if request.args.get('platform')==p %}selected{% endif %}>{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="button" class="btn-reset"
+                onclick="window.location.href='/dashboard?key={{ request.args.get('key') }}'">
+                ↺ Reset
+            </button>
+        </div>
+    </form>
+
+    <!-- KPI Cards Row 1 -->
+    <div class="section-divider">Ringkasan Utama</div>
+    <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 16px; margin-top: 12px;">
+
+        <div class="kpi-card accent-indigo">
+            <div class="kpi-icon">📦</div>
+            <div class="kpi-label">Total Model</div>
+            <div class="kpi-value">{{ m.num_models }}</div>
+            <div class="kpi-sub">SKU aktif dalam periode</div>
+        </div>
+
+        <div class="kpi-card accent-emerald">
+            <div class="kpi-icon">🛒</div>
+            <div class="kpi-label">Total Order</div>
+            <div class="kpi-value">{{ "{:,}".format(m.num_orders) }}</div>
+            <div class="kpi-sub">Transaksi unik</div>
+        </div>
+
+        <div class="kpi-card accent-amber">
+            <div class="kpi-icon">💰</div>
+            <div class="kpi-label">Total Pendapatan</div>
+            <div class="kpi-value" style="font-size: 20px;">Rp {{ "{:,.0f}".format(m.revenue_month) }}</div>
+            <div class="kpi-sub">Total amount terjual</div>
+        </div>
+
+        <div class="kpi-card accent-sky">
+            <div class="kpi-icon">📍</div>
+            <div class="kpi-label">Jumlah Kota</div>
+            <div class="kpi-value">{{ m.num_cities }}</div>
+            <div class="kpi-sub">Kota dengan pembeli aktif</div>
+        </div>
+
+        <div class="kpi-card accent-rose">
+            <div class="kpi-icon">🎯</div>
+            <div class="kpi-label">AOV</div>
+            <div class="kpi-value" style="font-size: 20px;">Rp {{ "{:,.0f}".format(m.aov) }}</div>
+            <div class="kpi-sub">Avg. Order Value per transaksi</div>
+        </div>
+
+        <div class="kpi-card accent-violet">
+            <div class="kpi-icon">🌙</div>
+            <div class="kpi-label">Lift Ramadhan</div>
+            <div class="kpi-value">{{ m.ramadhan_lift }}%</div>
+            <div class="kpi-sub">vs rata-rata hari biasa</div>
+        </div>
+
+    </div>
+
+    <!-- Daily Avg Card with Ramadhan toggle -->
+    <style>
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .toggle-input {
+            display: none;
+        }
+
+        .toggle-track {
+            width: 36px;
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 99px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toggle-track::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: #fff;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+        }
+
+        .toggle-input:checked+.toggle-track {
+            background: #8b5cf6;
+        }
+
+        .toggle-input:checked+.toggle-track::after {
+            transform: translateX(16px);
+        }
+
+        /* Progress bars */
+        .avg-bar {
+            height: 6px;
+            border-radius: 99px;
+            overflow: hidden;
+            margin-top: 8px;
+            background: #f3f4f6;
+        }
+
+        .avg-bar-fill {
+            height: 100%;
+            border-radius: 99px;
+            transition: width 0.5s ease;
+        }
+
+        .fill-overall {
+            background: linear-gradient(90deg, #6366f1, #818cf8);
+        }
+
+        .fill-ramadhan {
+            background: linear-gradient(90deg, #8b5cf6, #6366f1);
+        }
+
+        .fill-normal {
+            background: #d1d5db;
+        }
+
+        /* Ramadhan comparison rows */
+        .cmp-row {
+            display: grid;
+            grid-template-columns: 1fr 1px 1fr;
+            gap: 20px;
+            align-items: start;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #f3f4f6;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease, padding-top 0.3s ease;
+        }
+
+        .cmp-row.open {
+            max-height: 200px;
+            opacity: 1;
+        }
+
+        .cmp-divider {
+            background: #f3f4f6;
+            width: 1px;
+            align-self: stretch;
+        }
+
+        .cmp-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 2px 8px;
+            border-radius: 99px;
+            margin-bottom: 8px;
+        }
+
+        .cmp-tag.ramadhan {
+            background: #f5f3ff;
+            color: #7c3aed;
+        }
+
+        .cmp-tag.normal {
+            background: #f9fafb;
+            color: #6b7280;
+        }
+    </style>
+
+    <div style="margin-bottom: 28px;">
+        <div class="chart-card" style="padding: 20px 24px;">
+
+            <!-- Header row -->
+            <div
+                style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+                <div class="chart-title" style="margin-bottom: 0;">Rata-rata Harian</div>
+                <div class="toggle-wrap">
+                    <span class="toggle-label" id="toggleLabel">Bandingkan Ramadhan</span>
+                    <input type="checkbox" class="toggle-input" id="ramadhanToggle">
+                    <label class="toggle-track" for="ramadhanToggle"></label>
+                </div>
+            </div>
+
+            <!-- Default: overall avg -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+
+                <!-- Avg Revenue/Hari -->
+                <div>
+                    <div
+                        style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
+                        Avg. Revenue / Hari</div>
+                    <div
+                        style="font-size: 22px; font-weight: 600; color: #111827; font-family: 'Lora', serif; line-height: 1.2;">
+                        Rp {{ "{:,.0f}".format(m.normal_avg_revenue) }}
+                    </div>
+                    <div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">rata-rata keseluruhan periode</div>
+                    <div class="avg-bar">
+                        <div class="avg-bar-fill fill-overall" style="width: 72%;"></div>
+                    </div>
+                </div>
+
+                <!-- Avg Order/Hari -->
+                <div>
+                    <div
+                        style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
+                        Avg. Order / Hari</div>
+                    <div
+                        style="font-size: 22px; font-weight: 600; color: #111827; font-family: 'Lora', serif; line-height: 1.2;">
+                        {{ "{:.1f}".format(m.normal_avg_orders) }}
+                    </div>
+                    <div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">rata-rata keseluruhan periode</div>
+                    <div class="avg-bar">
+                        <div class="avg-bar-fill fill-overall" style="width: 60%;"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Ramadhan comparison (hidden by default) -->
+            <div class="cmp-row" id="cmpRow">
+
+                <!-- Ramadhan -->
+                <div>
+                    <div class="cmp-tag ramadhan">🌙 Ramadhan</div>
+                    <div style="margin-bottom: 14px;">
+                        <div
+                            style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
+                            Revenue / Hari</div>
+                        <div style="font-size: 18px; font-weight: 600; color: #7c3aed; font-family: 'Lora', serif;">Rp
+                            {{ "{:,.0f}".format(m.ramadhan_avg_revenue) }}</div>
+                        {% set r_rev_pct = (m.ramadhan_avg_revenue / (m.ramadhan_avg_revenue + m.normal_avg_revenue) *
+                        100) if (m.ramadhan_avg_revenue + m.normal_avg_revenue) > 0 else 50 %}
+                        <div class="avg-bar">
+                            <div class="avg-bar-fill fill-ramadhan" style="width: {{ r_rev_pct | round(0) }}%;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div
+                            style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
+                            Order / Hari</div>
+                        <div style="font-size: 18px; font-weight: 600; color: #7c3aed; font-family: 'Lora', serif;">{{
+                            "{:.1f}".format(m.ramadhan_avg_orders) }}</div>
+                        {% set r_ord_pct = (m.ramadhan_avg_orders / (m.ramadhan_avg_orders + m.normal_avg_orders) * 100)
+                        if (m.ramadhan_avg_orders + m.normal_avg_orders) > 0 else 50 %}
+                        <div class="avg-bar">
+                            <div class="avg-bar-fill fill-ramadhan" style="width: {{ r_ord_pct | round(0) }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cmp-divider"></div>
+
+                <!-- Normal -->
+                <div>
+                    <div class="cmp-tag normal">☀️ Hari Biasa</div>
+                    <div style="margin-bottom: 14px;">
+                        <div
+                            style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
+                            Revenue / Hari</div>
+                        <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: 'Lora', serif;">Rp
+                            {{ "{:,.0f}".format(m.normal_avg_revenue) }}</div>
+                        {% set n_rev_pct = (m.normal_avg_revenue / (m.ramadhan_avg_revenue + m.normal_avg_revenue) *
+                        100) if (m.ramadhan_avg_revenue + m.normal_avg_revenue) > 0 else 50 %}
+                        <div class="avg-bar">
+                            <div class="avg-bar-fill fill-normal" style="width: {{ n_rev_pct | round(0) }}%;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div
+                            style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">
+                            Order / Hari</div>
+                        <div style="font-size: 18px; font-weight: 600; color: #374151; font-family: 'Lora', serif;">{{
+                            "{:.1f}".format(m.normal_avg_orders) }}</div>
+                        {% set n_ord_pct = (m.normal_avg_orders / (m.ramadhan_avg_orders + m.normal_avg_orders) * 100)
+                        if (m.ramadhan_avg_orders + m.normal_avg_orders) > 0 else 50 %}
+                        <div class="avg-bar">
+                            <div class="avg-bar-fill fill-normal" style="width: {{ n_ord_pct | round(0) }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('ramadhanToggle').addEventListener('change', function () {
+            const cmp = document.getElementById('cmpRow');
+            const label = document.getElementById('toggleLabel');
+            if (this.checked) {
+                cmp.classList.add('open');
+                label.style.color = '#7c3aed';
+                label.style.fontWeight = '600';
+            } else {
+                cmp.classList.remove('open');
+                label.style.color = '#6b7280';
+                label.style.fontWeight = '500';
+            }
+        });
+    </script>
+
+    <!-- Charts Row -->
+    <div class="section-divider" style="margin-bottom: 12px;">Tren & Distribusi</div>
+    <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px;">
+        <div class="chart-card">
+            <div class="chart-title">Tren Penjualan per Platform</div>
+            <canvas id="salesLineChart" height="120"></canvas>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">Quantity Terjual per Warna Produk</div>
+            <canvas id="colorBarChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- Map + Top Products -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <div class="chart-card">
+            <div class="chart-title">Proporsi Penjualan per Platform</div>
+            <div style="flex-grow: 1; position: relative; min-height: 220px;">
+                <canvas id="platformDonutChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">Top 5 Best Selling Models</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 40px;">#</th>
+                        <th>Nama Model</th>
+                        <th style="text-align: right;">Qty Terjual</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in m.top_products %}
+                    <tr>
+                        <td>
+                            <span
+                                class="rank-badge {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
+                                {{ loop.index }}
+                            </span>
+                        </td>
+                        <td style="font-weight: 500; color: #111827;">{{ p[0] }}</td>
+                        <td style="text-align: right; font-weight: 600; color: #374151;">{{ "{:,}".format(p[1]) }} <span
+                                style="font-size: 11px; color: #9ca3af; font-weight: 400;">pcs</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+
+        <div class="chart-card">
+            <div class="chart-title">Avg. Basket Size per Payment Method</div>
+            <canvas id="paymentBarChart" height="120"></canvas>
+        </div>
+
+        <div class="chart-card" style="display: flex; flex-direction: column;">
+            <div class="chart-title">Product Size Distribution</div>
+            <div style="flex-grow: 1; position: relative; min-height: 220px;">
+                <canvas id="sizeDonutChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px;">
+        <div class="chart-card">
+            <div class="chart-title">Sebaran Penjualan per Provinsi</div>
+            <div style="width: 100%; height: 380px; overflow: hidden; position: relative;">
+                <div id="regions_div" style="width: 115%; height: 125%; position: absolute; top: -12%; left: -5.5%;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- JSON Data -->
+<script id="dashboard-data" type="application/json">{{ m | tojson }}</script>
+
+<script>
+    const m = JSON.parse(document.getElementById('dashboard-data').textContent);
+
+    const PALETTE = ['#6366f1', '#10b981', '#f59e0b', '#f43f5e', '#0ea5e9', '#8b5cf6', '#14b8a6'];
+    const GRID_COLOR = 'rgba(0,0,0,0.04)';
+    const TICK_COLOR = '#9ca3af';
+
+    const rawLineData = m.line_data;
+    const dates = [...new Set(rawLineData.map(d => d.date))];
+    const platforms = [...new Set(rawLineData.map(d => d.platform))];
+
+    const baseChartOpts = {
+        plugins: { legend: { labels: { font: { family: 'DM Sans', size: 12 }, color: '#6b7280', boxWidth: 10, boxHeight: 10, borderRadius: 3 } } },
+        scales: {
+            x: { grid: { color: GRID_COLOR }, ticks: { color: TICK_COLOR, font: { family: 'DM Sans', size: 11 } } },
+            y: { grid: { color: GRID_COLOR }, ticks: { color: TICK_COLOR, font: { family: 'DM Sans', size: 11 } } }
+        }
+    };
+
+    const platformTotals = platforms.map(p => {
+        return rawLineData
+            .filter(d => d.platform === p)
+            .reduce((sum, d) => sum + d.amount, 0);
+    });
+
+    new Chart(document.getElementById('paymentBarChart'), {
+        type: 'bar',
+        data: {
+            labels: m.payment_labels,
+            datasets: [{
+                label: 'Avg. Basket Size (Rp)',
+                data: m.payment_values,
+                backgroundColor: PALETTE[3] + 'cc',
+                borderRadius: 6,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            ...baseChartOpts,
+            responsive: true,
+            plugins: { 
+                ...baseChartOpts.plugins, 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return 'Rp ' + context.raw.toLocaleString('id-ID');
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('sizeDonutChart'), {
+        type: 'doughnut',
+        data: {
+            labels: m.size_labels,
+            datasets: [{
+                data: m.size_values,
+                backgroundColor: m.size_labels.map((_, i) => PALETTE[(i + 1) % PALETTE.length] + 'cc'),
+                hoverBackgroundColor: m.size_labels.map((_, i) => PALETTE[(i + 1) % PALETTE.length]),
+                borderWidth: 2,
+                borderColor: '#ffffff',
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '20%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { family: 'DM Sans', size: 12 },
+                        color: '#6b7280',
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            let label = context.label || '';
+                            if (label) label += ': ';
+                            label += context.raw.toLocaleString('id-ID') + ' Orders';
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('platformDonutChart'), {
+        type: 'pie',
+        data: {
+            labels: platforms,
+            datasets: [{
+                data: platformTotals,
+                backgroundColor: platforms.map((_, i) => PALETTE[i % PALETTE.length] + 'cc'),
+                hoverBackgroundColor: platforms.map((_, i) => PALETTE[i % PALETTE.length]),
+                borderWidth: 2,
+                borderColor: '#ffffff',
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { family: 'DM Sans', size: 12 },
+                        color: '#6b7280',
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            let label = context.label || '';
+                            if (label) label += ': ';
+                            label += 'Rp ' + context.raw.toLocaleString('id-ID');
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('salesLineChart'), {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: platforms.map((p, i) => ({
+                label: p,
+                data: dates.map(dt => {
+                    const found = rawLineData.find(d => d.date === dt && d.platform === p);
+                    return found ? found.amount : 0;
+                }),
+                borderColor: PALETTE[i % PALETTE.length],
+                backgroundColor: PALETTE[i % PALETTE.length] + '18',
+                borderWidth: 2,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                tension: 0.35,
+                fill: false
+            }))
+        },
+        options: { ...baseChartOpts, responsive: true }
+    });
+
+    new Chart(document.getElementById('colorBarChart'), {
+        type: 'bar',
+        data: {
+            labels: m.color_labels,
+            datasets: [{
+                label: 'Quantity',
+                data: m.color_values,
+                backgroundColor: m.color_labels.map((_, i) => PALETTE[i % PALETTE.length] + 'cc'),
+                borderRadius: 6,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            ...baseChartOpts,
+            responsive: true,
+            plugins: { ...baseChartOpts.plugins, legend: { display: false } }
+        }
+    });
+
+    google.charts.load('current', { packages: ['geochart'] });
+    google.charts.setOnLoadCallback(() => {
+
+        const isoMapping = {
+            "DKI JAKARTA": "ID-JK",
+            "DI YOGYAKARTA": "ID-YO",
+            "JAWA BARAT": "ID-JB",
+            "JAWA TENGAH": "ID-JT",
+            "JAWA TIMUR": "ID-JI",
+            "BANTEN": "ID-BT",
+            "BALI": "ID-BA",
+            "ACEH": "ID-AC",
+            "SUMATERA UTARA": "ID-SU",
+            "SUMATERA BARAT": "ID-SB",
+            "RIAU": "ID-RI",
+            "KEPULAUAN RIAU": "ID-KR",
+            "JAMBI": "ID-JA",
+            "SUMATERA SELATAN": "ID-SS",
+            "BENGKULU": "ID-BE",
+            "LAMPUNG": "ID-LA",
+            "KEPULAUAN BANGKA BELITUNG": "ID-BB",
+            "NUSA TENGGARA BARAT": "ID-NB",
+            "NUSA TENGGARA TIMUR": "ID-NT",
+            "KALIMANTAN BARAT": "ID-KB",
+            "KALIMANTAN TENGAH": "ID-KT",
+            "KALIMANTAN SELATAN": "ID-KS",
+            "KALIMANTAN TIMUR": "ID-KI",
+            "KALIMANTAN UTARA": "ID-KU",
+            "SULAWESI UTARA": "ID-SA",
+            "SULAWESI TENGAH": "ID-ST",
+            "SULAWESI SELATAN": "ID-SN",
+            "SULAWESI TENGGARA": "ID-SG",
+            "GORONTALO": "ID-GO",
+            "SULAWESI BARAT": "ID-SR",
+            "MALUKU": "ID-MA",
+            "MALUKU UTARA": "ID-MU",
+            "PAPUA": "ID-PA",
+            "PAPUA BARAT": "ID-PB",
+            "PAPUA BARAT DAYA": "ID-PD",
+            "PAPUA TENGAH": "ID-PT"
+        };
+
+        let mapDataCleaned = m.map_data.map(row => {
+            if (typeof row[0] === 'string' && row[0] !== 'Provinsi') {
+                let provName = row[0].toUpperCase().trim();
+
+                if (isoMapping[provName]) {
+                    row[0] = {
+                        v: isoMapping[provName],
+                        f: provName
+                    };
+                }
+            }
+            return row;
+        });
+
+        const data = google.visualization.arrayToDataTable(mapDataCleaned);
+        const chart = new google.visualization.GeoChart(document.getElementById('regions_div'));
+        chart.draw(data, {
+            region: 'ID',
+            displayMode: 'regions',
+            resolution: 'provinces',
+            colorAxis: { colors: ['#eef2ff', '#6366f1'] },
+            backgroundColor: '#ffffff',
+            datalessRegionColor: '#f8f7f4',
+            defaultColor: '#f3f4f6'
+        });
+    });
+</script>
+{% endblock %}

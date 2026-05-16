@@ -1,0 +1,198 @@
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap"
+  rel="stylesheet"
+/>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: "DM Sans", sans-serif;
+    background: #f8f7f4;
+    color: #111827;
+    min-height: 100vh;
+  }
+
+  /* ── Navbar ── */
+  .nav-root {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid #e8e5df;
+  }
+
+  .nav-inner {
+    max-width: 80%;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  /* Brand */
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .nav-brand-icon {
+    width: 32px;
+    height: 32px;
+    background: #111827;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nav-brand-icon svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: #f8f7f4;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .nav-brand-name {
+    font-family: "Lora", serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: #111827;
+    letter-spacing: -0.01em;
+  }
+  .nav-brand-sub {
+    font-size: 10px;
+    font-weight: 500;
+    color: #9ca3af;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 1px;
+    line-height: 1;
+  }
+
+  /* Links */
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    list-style: none;
+  }
+  .nav-links a {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+    text-decoration: none;
+    transition:
+      background 0.15s,
+      color 0.15s;
+    white-space: nowrap;
+  }
+  .nav-links a:hover {
+    background: #f3f4f6;
+    color: #111827;
+  }
+  .nav-links a.active {
+    background: #111827;
+    color: #f8f7f4;
+  }
+  .nav-links a svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  /* Right slot */
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .nav-badge {
+    font-size: 11px;
+    font-weight: 500;
+    color: #9ca3af;
+    padding: 3px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 99px;
+    background: #fafafa;
+  }
+</style>
+
+<nav class="nav-root">
+    <div class="nav-inner">
+ 
+      <!-- Brand -->
+      <a class="nav-brand" href="/dashboard?key={{ request.args.get('key') }}">
+        <div class="nav-brand-icon">
+          <!-- bar-chart icon -->
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="12" width="4" height="9" rx="1"/>
+            <rect x="10" y="7"  width="4" height="14" rx="1"/>
+            <rect x="17" y="3" width="4" height="18" rx="1"/>
+          </svg>
+        </div>
+        <div>
+          <div class="nav-brand-name">Janus</div>
+          <div class="nav-brand-sub">Analytics</div>
+        </div>
+      </a>
+ 
+      <!-- Nav Links -->
+      <ul class="nav-links">
+        <li>
+          <a href="/dashboard?key={{ request.args.get('key') }}"
+             class="{{ 'active' if request.endpoint == 'dashboard_view' else '' }}">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+              <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+              <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+              <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+            </svg>
+            Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="#"
+             class="{{ 'active' if request.endpoint == 'upload_view' else '' }}">
+            <svg viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Upload Data
+          </a>
+        </li>
+      </ul>
+ 
+      <!-- Right: env badge -->
+      <div class="nav-right">
+
+      </div>
+ 
+    </div>
+  </nav>
