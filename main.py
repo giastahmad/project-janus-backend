@@ -328,14 +328,12 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
         normal_days = (
             _normal([func.count(func.distinct(DateDimension.date))]).scalar() or 0
         )
+        total_days = (
+            _base([func.count(func.distinct(DateDimension.date))]).scalar() or 0
+        )
 
         ramadhan_revenue = _ramadhan([func.sum(OrderFact.total_amount)]).scalar() or 0
         normal_revenue = _normal([func.sum(OrderFact.total_amount)]).scalar() or 0
-
-        ramadhan_avg_revenue = (
-            (ramadhan_revenue / ramadhan_days) if ramadhan_days > 0 else 0
-        )
-        normal_avg_revenue = (normal_revenue / normal_days) if normal_days > 0 else 0
 
         ramadhan_orders = (
             _ramadhan([func.count(func.distinct(OrderFact.order_key))]).scalar() or 0
@@ -344,18 +342,28 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
             _normal([func.count(func.distinct(OrderFact.order_key))]).scalar() or 0
         )
 
+        overall_avg_revenue = (
+            (float(revenue_total) / total_days) if total_days > 0 else 0
+        )
+        overall_avg_orders = (num_orders / total_days) if total_days > 0 else 0
+
+        ramadhan_avg_revenue = (
+            (ramadhan_revenue / ramadhan_days) if ramadhan_days > 0 else 0
+        )
+        normal_avg_revenue = (normal_revenue / normal_days) if normal_days > 0 else 0
         ramadhan_avg_orders = (
             (ramadhan_orders / ramadhan_days) if ramadhan_days > 0 else 0
         )
         normal_avg_orders = (normal_orders / normal_days) if normal_days > 0 else 0
 
-        if normal_avg_revenue > 0:
+        has_comparison = ramadhan_days > 0 and normal_days > 0
+        if has_comparison and normal_avg_revenue > 0:
             ramadhan_lift = round(
                 (ramadhan_avg_revenue - normal_avg_revenue) / normal_avg_revenue * 100,
                 1,
             )
         else:
-            ramadhan_lift = 0
+            ramadhan_lift = None
 
         # --------------------------------------------------
         # 8. Chart: Bar — Quantity per Warna
@@ -453,7 +461,10 @@ def get_dashboard_metrics(start_date=None, end_date=None, platform=None):
             "revenue_month": float(revenue_total),
             "num_cities": num_cities,
             "aov": round(float(aov), 0),
+            "overall_avg_revenue": round(overall_avg_revenue, 0),
+            "overall_avg_orders": round(overall_avg_orders, 2),
             "ramadhan_lift": ramadhan_lift,
+            "has_comparison": has_comparison,
             "ramadhan_avg_revenue": round(float(ramadhan_avg_revenue), 0),
             "normal_avg_revenue": round(float(normal_avg_revenue), 0),
             "ramadhan_avg_orders": round(float(ramadhan_avg_orders), 2),
@@ -498,6 +509,7 @@ def forecast_view():
         return "Akses Ditolak", 401
 
     return render_template("forecast.html")
+
 
 @app.route("/api/download-prediction", methods=["GET"])
 def download_prediction():

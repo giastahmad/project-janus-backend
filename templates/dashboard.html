@@ -708,7 +708,8 @@
       </div>
       <button type="button" class="btn-reset"
         onclick="window.location.href='/dashboard?key={{ request.args.get('key') }}'">↺ Reset</button>
-      <div id="dateError" style="display: none; align-items: center; gap: 8px; background: #fff1f0; border: 1px solid #fca5a5; color: #dc2626; font-size: 12px; font-weight: 500; padding: 8px 14px; border-radius: 10px; width: 100%;">
+      <div id="dateError"
+        style="display: none; align-items: center; gap: 8px; background: #fff1f0; border: 1px solid #fca5a5; color: #dc2626; font-size: 12px; font-weight: 500; padding: 8px 14px; border-radius: 10px; width: 100%;">
         Tanggal mulai tidak boleh lebih besar dari tanggal akhir.
       </div>
     </div>
@@ -832,8 +833,20 @@
           </svg></span>
         Lonjakan Ramadhan
       </div>
-      <div class="kpi-value">{{ m.ramadhan_lift }}%</div>
-      <div class="kpi-sub">vs rata-rata hari biasa</div>
+      <div class="kpi-value">
+        {% if m.ramadhan_lift is none %}
+        <span style="font-size: 16px; color: #9ca3af;">—</span>
+        {% else %}
+        {{ m.ramadhan_lift }}%
+        {% endif %}
+      </div>
+      <div class="kpi-sub">
+        {% if m.ramadhan_lift is none %}
+        Tidak ada data pembanding
+        {% else %}
+        vs rata-rata hari biasa
+        {% endif %}
+      </div>
     </div>
 
   </div>
@@ -844,11 +857,13 @@
       <div
         style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
         <div class="chart-title" style="margin-bottom: 0;">Rata-rata Harian</div>
+        {% if m.has_comparison %}
         <div class="toggle-wrap">
           <span class="toggle-label" id="toggleLabel">Bandingkan Ramadhan</span>
           <input type="checkbox" class="toggle-input" id="ramadhanToggle">
           <label class="toggle-track" for="ramadhanToggle"></label>
         </div>
+        {% endif %}
       </div>
 
       <!-- Overall averages -->
@@ -858,7 +873,7 @@
             style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
             Rata-rata Pendapatan / Hari</div>
           <div style="font-size: 22px; font-weight: 600; color: #111827; font-family: 'Lora', serif; line-height: 1.2;">
-            Rp {{ "{:,.0f}".format(m.normal_avg_revenue) }}</div>
+            Rp {{ "{:,.0f}".format(m.overall_avg_revenue) }}</div>
           <div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">rata-rata keseluruhan periode</div>
           <div class="avg-bar">
             <div class="avg-bar-fill fill-overall" style="width: 72%;"></div>
@@ -869,7 +884,7 @@
             style="font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">
             Rata-rata Order / Hari</div>
           <div style="font-size: 22px; font-weight: 600; color: #111827; font-family: 'Lora', serif; line-height: 1.2;">
-            {{ "{:.1f}".format(m.normal_avg_orders) }}</div>
+            {{ "{:.1f}".format(m.overall_avg_orders) }}</div>
           <div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">rata-rata keseluruhan periode</div>
           <div class="avg-bar">
             <div class="avg-bar-fill fill-overall" style="width: 60%;"></div>
