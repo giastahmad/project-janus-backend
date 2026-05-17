@@ -160,17 +160,17 @@ def load_data_warehouse(df_transformed):
     df = load_product_dimension(engine, df_transformed)
     
     print("   2. Fetching Seeder data from static dimensions...")
-    dim_date = pd.read_sql("SELECT date_id, date FROM date_dimension", engine)
+    dim_date     = pd.read_sql("SELECT date_id, date FROM date_dimension", engine)
     dim_location = pd.read_sql("SELECT location_id, province, city FROM location_dimension", engine)
     dim_platform = pd.read_sql("SELECT platform_id, platform_name FROM platform_dimension", engine)
-    dim_payment = pd.read_sql("SELECT payment_method_id, payment_method_name FROM payment_method_dimension", engine)
+    dim_payment  = pd.read_sql("SELECT payment_method_id, payment_method_name FROM payment_method_dimension", engine)
     
     print("   3. Performing Mapping/Lookup for Foreign Keys...")
-    df['date'] = pd.to_datetime(df['date']).dt.date
+    df['date']       = pd.to_datetime(df['date']).dt.date
     dim_date['date'] = pd.to_datetime(dim_date['date']).dt.date
-    df = df.merge(dim_date, on='date', how='left')
-    df = df.merge(dim_platform, left_on='platform', right_on='platform_name', how='left')
-    df = df.merge(dim_payment, left_on='payment_method', right_on='payment_method_name', how='left')
+    df = df.merge(dim_date,     on='date',               how='left')
+    df = df.merge(dim_platform, left_on='platform',      right_on='platform_name',      how='left')
+    df = df.merge(dim_payment,  left_on='payment_method', right_on='payment_method_name', how='left')
     df = fuzzy_map_location(df, dim_location, threshold=85)
     
     missing_locs = df[df['location_id'].isnull()]
@@ -179,8 +179,8 @@ def load_data_warehouse(df_transformed):
     
     print("   4. Filtering columns for Order Fact...")
     fact_columns = [
-        'order_key', 'date_id', 'payment_method_id', 'product_id', 
-        'platform_id', 'location_id', 'quantity', 'price', 
+        'order_key', 'date_id', 'payment_method_id', 'product_id',
+        'platform_id', 'location_id', 'quantity', 'price',
         'discount', 'total_amount'
     ]
     df_order_fact = df[fact_columns].copy()
@@ -191,14 +191,15 @@ def load_data_warehouse(df_transformed):
         dropna=False,
         as_index=False
     ).agg({
-        'quantity': 'sum',     
-        'price': 'mean',       
-        'discount': 'sum',    
-        'total_amount': 'sum' 
+        'quantity':     'sum',
+        'price':        'mean',
+        'discount':     'sum',
+        'total_amount': 'sum'
     })
     
     print("   6. Checking potential duplicate entries in order_fact...")
     current_order_keys = df_order_fact['order_key'].dropna().unique().tolist()
+    rows_skipped = 0
     
     if current_order_keys:
         keys_str = "', '".join([str(k).replace("'", "''") for k in current_order_keys])
@@ -208,47 +209,74 @@ def load_data_warehouse(df_transformed):
             existing_facts = pd.read_sql(query_check, engine)
             
             if not existing_facts.empty:
-                print(f"      -> Found {len(existing_facts)} existing product records in orders that are already in the database. Filtering data...")
-                
-                merged_fact = df_order_fact.merge(existing_facts, on=['order_key', 'product_id'], how='left', indicator=True)
-                
+                print(f"      -> Found {len(existing_facts)} existing product records. Filtering...")
+                merged_fact   = df_order_fact.merge(existing_facts, on=['order_key', 'product_id'], how='left', indicator=True)
                 df_order_fact_final = merged_fact[merged_fact['_merge'] == 'left_only'].drop(columns=['_merge'])
+                rows_skipped = len(existing_facts)
             else:
                 df_order_fact_final = df_order_fact
         except Exception as e:
             df_order_fact_final = df_order_fact
     else:
         df_order_fact_final = df_order_fact
-        
-    UNKNOWN_PRODUCT_ID = 419 
-    
-    total_rows = len(df_order_fact_final)
-    unknown_rows = len(df_order_fact_final[df_order_fact_final['product_id'] == UNKNOWN_PRODUCT_ID])
-    
+ 
+    # ── All rows already exist? ─────────────────────────────────────────────────
+    if df_order_fact_final.empty and rows_skipped > 0:
+        print("[INFO] All data in this file already exists in the database (ignored).")
+        return {
+            "code":           "NO_NEW_DATA",
+            "rows_loaded":    0,
+            "rows_skipped":   rows_skipped,
+            "duplicate_count": rows_skipped,
+        }
+ 
+    # ── Unknown SKU quality gate ────────────────────────────────────────────────
+    UNKNOWN_PRODUCT_ID = 419
+ 
+    total_rows    = len(df_order_fact_final)
+    unknown_rows  = len(df_order_fact_final[df_order_fact_final['product_id'] == UNKNOWN_PRODUCT_ID])
     total_revenue = df_order_fact_final['total_amount'].sum()
-    unknown_revenue = df_order_fact_final[df_order_fact_final['product_id'] == UNKNOWN_PRODUCT_ID]['total_amount'].sum()
-    
+    unknown_revenue = df_order_fact_final[
+        df_order_fact_final['product_id'] == UNKNOWN_PRODUCT_ID
+    ]['total_amount'].sum()
+ 
+    row_pct = 0.0
+    rev_pct = 0.0
+ 
     if total_rows > 0 and total_revenue > 0:
         row_pct = (unknown_rows / total_rows) * 100
         rev_pct = (unknown_revenue / total_revenue) * 100
-        
+ 
         print(f"   [DATA QUALITY] Product Status UNKNOWN:")
-        print(f"      - Volume: {row_pct:.2f}% ({unknown_rows} from {total_rows} transactions)")
+        print(f"      - Volume : {row_pct:.2f}% ({unknown_rows} from {total_rows} transactions)")
         print(f"      - Revenue: {rev_pct:.2f}% from total revenue of this batch")
-        
+ 
         if row_pct > 5.0 or rev_pct > 3.0:
-            print(f"      [CRITICAL WARNING] UNKNOWN percentage is too high!")
-            print(f"      Please check SKU_MAPPING in transform.py for the latest products.")
-            print(f"      [ABORT] Load Process aborted. Data has not been loaded.")
-
-
-    print(f"   7. Inserting {len(df_order_fact_final)} rows of NEW TRANSACTIONS into order_fact...")
-    
-    if not df_order_fact_final.empty:
-        try:
-            df_order_fact_final.to_sql('order_fact', engine, if_exists='append', index=False)
-            print("[SUCCESS] Data successfully loaded into Data Warehouse!")
-        except Exception as e:
-            print(f"[ERROR] Failed to insert data into order_fact: {e}")
-    else:
-        print("[INFO] All data in this file has already been inserted into the database (ignored).")
+            print(f"      [CRITICAL WARNING] UNKNOWN percentage too high — aborting load.")
+            return {
+                "code":        "ABORT_HIGH_UNKNOWN",
+                "rows_loaded": 0,
+                "rows_skipped": rows_skipped,
+                "row_pct":     round(row_pct, 2),
+                "rev_pct":     round(rev_pct, 2),
+            }
+ 
+    # ── Insert ──────────────────────────────────────────────────────────────────
+    print(f"   7. Inserting {len(df_order_fact_final)} new rows into order_fact...")
+ 
+    try:
+        df_order_fact_final.to_sql('order_fact', engine, if_exists='append', index=False)
+        print("[SUCCESS] Data successfully loaded into Data Warehouse!")
+    except Exception as e:
+        print(f"[ERROR] Failed to insert data: {e}")
+        raise
+ 
+    has_warning = (row_pct > 0) or (rev_pct > 0)
+ 
+    return {
+        "code":         "SUCCESS_WITH_WARNING" if has_warning else "SUCCESS",
+        "rows_loaded":  len(df_order_fact_final),
+        "rows_skipped": rows_skipped,
+        "row_pct":      round(row_pct, 2),
+        "rev_pct":      round(rev_pct, 2),
+    }
