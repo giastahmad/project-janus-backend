@@ -1,17 +1,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap"
-  rel="stylesheet" />
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
 <style>
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
+  *, *::before, *::after { box-sizing: border-box; }
 
   body {
     font-family: "DM Sans", sans-serif;
@@ -20,26 +12,28 @@
     min-height: 100vh;
   }
 
-  /* ── Navbar ── */
+  /* ════════════════════════════════
+     NAVBAR — shared base
+  ════════════════════════════════ */
   .nav-root {
     position: sticky;
     top: 0;
-    z-index: 50;
-    background: rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    z-index: 200;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid #e8e5df;
   }
 
   .nav-inner {
-    max-width: 80%;
+    max-width: 1600px;
     margin: 0 auto;
-    padding: 0 24px;
+    padding: 0 32px;
     height: 60px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
+    gap: 20px;
   }
 
   /* Brand */
@@ -48,26 +42,23 @@
     align-items: center;
     gap: 10px;
     text-decoration: none;
+    flex-shrink: 0;
   }
 
   .nav-brand-icon {
     width: 32px;
     height: 32px;
-    background: #E6521F;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
   }
 
-  .nav-brand-icon svg {
-    width: 16px;
-    height: 16px;
-    fill: none;
-    stroke: #f8f7f4;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+  .nav-brand-icon img {
+    width: 40px;  
+    height: 40px;
+    object-fit: contain;
   }
 
   .nav-brand-name {
@@ -88,39 +79,32 @@
     line-height: 1;
   }
 
-  /* Links */
+  /* Desktop nav links */
   .nav-links {
     display: flex;
     align-items: center;
     gap: 4px;
     list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
   .nav-links a {
     display: flex;
     align-items: center;
     gap: 7px;
-    padding: 7px 14px;
+    padding: 7px 13px;
     border-radius: 9px;
     font-size: 13px;
     font-weight: 500;
     color: #6b7280;
     text-decoration: none;
-    transition:
-      background 0.15s,
-      color 0.15s;
+    transition: background 0.15s, color 0.15s;
     white-space: nowrap;
   }
 
-  .nav-links a:hover {
-    background: #f3f4f6;
-    color: #E6521F;
-  }
-
-  .nav-links a.active {
-    background: #E6521F;
-    color: #f8f7f4;
-  }
+  .nav-links a:hover { background: #f3f4f6; color: #E6521F; }
+  .nav-links a.active { background: #E6521F; color: #f8f7f4; }
 
   .nav-links a svg {
     width: 14px;
@@ -148,75 +132,345 @@
     border: 1px solid #e5e7eb;
     border-radius: 99px;
     background: #fafafa;
+    white-space: nowrap;
+  }
+
+  /* Hamburger button — hidden on desktop */
+  .nav-hamburger {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+    background: #fafafa;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .nav-hamburger:hover { background: #f3f4f6; border-color: #d1d5db; }
+
+  .nav-hamburger svg {
+    width: 18px;
+    height: 18px;
+    stroke: #6b7280;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    transition: stroke 0.15s;
+  }
+
+  .nav-hamburger:hover svg { stroke: #E6521F; }
+
+  /* ════════════════════════════════
+     SIDEBAR (mobile/tablet)
+  ════════════════════════════════ */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.35);
+    backdrop-filter: blur(2px);
+    z-index: 300;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .sidebar-overlay.open { display: block; opacity: 1; }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 272px;
+    background: #fff;
+    border-right: 1px solid #e8e5df;
+    z-index: 400;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform;
+  }
+
+  .sidebar.open { transform: translateX(0); }
+
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    flex-shrink: 0;
+  }
+
+  .sidebar-close {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+
+  .sidebar-close:hover { background: #fee2e2; border-color: #fca5a5; }
+
+  .sidebar-close svg {
+    width: 16px;
+    height: 16px;
+    stroke: #9ca3af;
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    transition: stroke 0.15s;
+  }
+
+  .sidebar-close:hover svg { stroke: #E6521F; }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 16px 12px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .sidebar-nav a:hover { background: #fff6f3; color: #E6521F; }
+
+  .sidebar-nav a.active {
+    background: #E6521F;
+    color: #fff;
+  }
+
+  .sidebar-nav a svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  .sidebar-nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #d1d5db;
+    padding: 10px 14px 4px;
+  }
+
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid #f3f4f6;
+    flex-shrink: 0;
+  }
+
+  .sidebar-footer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #9ca3af;
+    padding: 5px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 99px;
+    background: #fafafa;
+  }
+
+  .sidebar-footer-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ════════════════════════════════
+     BREAKPOINTS
+  ════════════════════════════════ */
+
+  /* ── Large desktop (≥1200px): full width, full nav ── */
+  @media (min-width: 1200px) {
+    .nav-inner { max-width: 1600px; padding: 0 40px; }
+  }
+
+  /* ── Small desktop / tablet landscape (992–1199px) ── */
+  @media (max-width: 1199px) {
+    .nav-inner { padding: 0 24px; }
+    .nav-links a { padding: 7px 10px; font-size: 12.5px; gap: 6px; }
+  }
+
+  /* ── Tablet portrait (768–991px): hide badge, compact links ── */
+  @media (max-width: 991px) {
+    .nav-inner { padding: 0 20px; justify-content: center; }
+    .nav-badge { display: none; }
+    .nav-links a span.link-text { display: none; }
+    .nav-links a { padding: 8px 10px; gap: 0; }
+    .nav-links a svg { width: 18px; height: 18px; }
+    .nav-brand { display: none; }
+    .nav-right { display: none; }
+  }
+
+  /* ── Mobile (≤767px): hamburger + sidebar ── */
+  @media (max-width: 767px) {
+    .nav-inner { padding: 0 16px; justify-content: space-between;}
+    .nav-links { display: none; }
+    .nav-right { display: none; }
+    .nav-hamburger { display: flex; }
+    .nav-brand { display: flex; }
+    .nav-brand-icon img { width: 32px; height: 32px; }
+  }
+
+  /* ── Small mobile (≤575px) ── */
+  @media (max-width: 575px) {
+    .nav-inner { padding: 0 12px; height: 54px; justify-content: space-between;}
+    .nav-brand-name { font-size: 15px; }
+    .nav-brand { display: flex; }
   }
 </style>
 
-<nav class="nav-root">
+<!-- Sidebar overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Sidebar panel -->
+<aside class="sidebar" id="sidebar" aria-label="Navigation menu" role="navigation">
+  <div class="sidebar-header">
+    <a class="nav-brand" id="sidebar-brand-link" href="#">
+      <div class="nav-brand-icon">
+        <img src="{{ url_for('static', filename='lamiah-new.png') }}" alt="Logo Lamiah">
+      </div>
+      <div class="nav-brand-left">
+        <div class="nav-brand-name">Analytics</div>
+        <div class="nav-brand-sub">System</div>
+      </div>
+    </a>
+    <button class="sidebar-close" id="sidebarClose" aria-label="Tutup menu">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="sidebar-nav-label">Menu</div>
+    <a id="sb-dashboard" href="#" class="">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="3" width="7" height="7" rx="1.5" />
+        <rect x="14" y="3" width="7" height="7" rx="1.5" />
+        <rect x="3" y="14" width="7" height="7" rx="1.5" />
+        <rect x="14" y="14" width="7" height="7" rx="1.5" />
+      </svg>
+      Dashboard
+    </a>
+    <a id="sb-upload" href="#">
+      <svg viewBox="0 0 24 24">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="17 8 12 3 7 8" />
+        <line x1="12" y1="3" x2="12" y2="15" />
+      </svg>
+      Upload Data
+    </a>
+    <a id="sb-forecast" href="#">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2v4"/><path d="M12 18v4"/>
+        <path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/>
+        <path d="M2 12h4"/><path d="M18 12h4"/>
+        <path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/>
+      </svg>
+      ML Forecast
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span class="sidebar-footer-badge">Lamiah</span>
+  </div>
+</aside>
+
+<!-- Navbar -->
+<nav class="nav-root" aria-label="Main navigation">
   <div class="nav-inner">
 
     <!-- Brand -->
-    <a class="nav-brand" id="nav-brand-link" href="/dashboard?key={{ request.args.get('key') }}">
+    <a class="nav-brand" id="nav-brand-link" href="#">
       <div class="nav-brand-icon">
-        <!-- bar-chart icon -->
-        <svg viewBox="0 0 24 24">
-          <rect x="3" y="12" width="4" height="9" rx="1" />
-          <rect x="10" y="7" width="4" height="14" rx="1" />
-          <rect x="17" y="3" width="4" height="18" rx="1" />
-        </svg>
-      </div>
-      <div>
-        <div class="nav-brand-name">Janus</div>
-        <div class="nav-brand-sub">Analytics</div>
+        <img src="{{ url_for('static', filename='lamiah-new.png') }}" alt="Logo Lamiah">
       </div>
     </a>
 
-    <!-- Nav Links -->
+    <!-- Desktop nav links -->
     <ul class="nav-links">
       <li>
-        <a id="nav-dashboard" href="/dashboard?key={{ request.args.get('key') }}"
-          class="{{ 'active' if request.endpoint == 'dashboard_view' else '' }}">
+        <a id="nav-dashboard" href="#">
           <svg viewBox="0 0 24 24">
             <rect x="3" y="3" width="7" height="7" rx="1.5" />
             <rect x="14" y="3" width="7" height="7" rx="1.5" />
             <rect x="3" y="14" width="7" height="7" rx="1.5" />
             <rect x="14" y="14" width="7" height="7" rx="1.5" />
           </svg>
-          Dashboard
+          <span class="link-text">Dashboard</span>
         </a>
       </li>
       <li>
-        <a id="nav-upload" href="/upload?key={{ request.args.get('key') }}"
-          class="{{ 'active' if request.endpoint == 'upload_view' else '' }}">
+        <a id="nav-upload" href="#">
           <svg viewBox="0 0 24 24">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="17 8 12 3 7 8" />
             <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
-          Upload Data
+          <span class="link-text">Upload Data</span>
         </a>
       </li>
       <li>
-          <a id="nav-forecast" href="/forecast?key={{ request.args.get('key') }}"
-             class="{{ 'active' if request.endpoint == 'forecast_view' else '' }}">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 2v4"></path>
-              <path d="M12 18v4"></path>
-              <path d="M4.93 4.93l2.83 2.83"></path>
-              <path d="M16.24 16.24l2.83 2.83"></path>
-              <path d="M2 12h4"></path>
-              <path d="M18 12h4"></path>
-              <path d="M4.93 19.07l2.83-2.83"></path>
-              <path d="M16.24 7.76l2.83-2.83"></path>
-            </svg>
-            ML Forecast
-          </a>
-        </li>
+        <a id="nav-forecast" href="#">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2v4"/><path d="M12 18v4"/>
+            <path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/>
+            <path d="M2 12h4"/><path d="M18 12h4"/>
+            <path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/>
+          </svg>
+          <span class="link-text">ML Forecast</span>
+        </a>
+      </li>
     </ul>
 
-    <!-- Right: env badge -->
+    <!-- Right slot -->
     <div class="nav-right">
-      <div class="nav-badge">Lamiah</div>
+      <!-- <div class="nav-badge">Lamiah</div> -->
     </div>
+
+    <!-- Hamburger (mobile only) -->
+    <button class="nav-hamburger" id="navHamburger" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="sidebar">
+      <svg viewBox="0 0 24 24">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
 
   </div>
 </nav>
@@ -236,9 +490,70 @@
       return qs ? basePath + '?' + qs : basePath;
     }
 
-    document.getElementById('nav-brand-link').href = buildUrl('/dashboard');
-    document.getElementById('nav-dashboard').href = buildUrl('/dashboard');
-    document.getElementById('nav-upload').href = buildUrl('/upload');
-    document.getElementById('nav-forecast').href = buildUrl('/forecast');
+    // Set hrefs
+    const dashUrl     = buildUrl('/dashboard');
+    const uploadUrl   = buildUrl('/upload');
+    const forecastUrl = buildUrl('/forecast');
+
+    const links = {
+      'nav-brand-link': dashUrl,
+      'nav-dashboard':  dashUrl,
+      'nav-upload':     uploadUrl,
+      'nav-forecast':   forecastUrl,
+      'sidebar-brand-link': dashUrl,
+      'sb-dashboard':   dashUrl,
+      'sb-upload':      uploadUrl,
+      'sb-forecast':    forecastUrl,
+    };
+
+    Object.entries(links).forEach(([id, url]) => {
+      const el = document.getElementById(id);
+      if (el) el.href = url;
+    });
+
+    // Active state — mark both desktop and sidebar links
+    const endpoint = '{{ request.endpoint }}';
+    const activeMap = {
+      'dashboard_view': ['nav-dashboard', 'sb-dashboard'],
+      'upload_view':    ['nav-upload',    'sb-upload'],
+      'forecast_view':  ['nav-forecast',  'sb-forecast'],
+    };
+
+    (activeMap[endpoint] || []).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('active');
+    });
+
+    // ── Sidebar open/close ──
+    const hamburger     = document.getElementById('navHamburger');
+    const sidebar       = document.getElementById('sidebar');
+    const overlay       = document.getElementById('sidebarOverlay');
+    const closeBtn      = document.getElementById('sidebarClose');
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+      hamburger.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
+
+    hamburger.addEventListener('click', openSidebar);
+    closeBtn.addEventListener('click', closeSidebar);
+    overlay.addEventListener('click', closeSidebar);
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && sidebar.classList.contains('open')) closeSidebar();
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 767 && sidebar.classList.contains('open')) closeSidebar();
+    });
   })();
 </script>
